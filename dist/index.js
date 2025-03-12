@@ -32462,7 +32462,7 @@ var init_websocketClient = __esm({
         if (!this.socket.connected) await executeAction({
           action: /* @__PURE__ */ __name(() => this.connect(), "action"),
           actionName: "Websocket connection initialization",
-          retryDelay: 3e4,
+          retryDelay: 15e3,
           maxRetries: Infinity,
           logging: true
         });
@@ -99388,16 +99388,15 @@ var init_collector = __esm({
             name: "host",
             type: "host",
             cpu: {
-              usedPercentage: Math.round(cpuData.currentLoad),
+              usedPercentage: parseFloat(cpuData.currentLoad.toFixed(2)),
               cores: cpuData.cpus.length
             },
             memory: {
               total: memData.total,
               used: memData.active,
               free: memData.available,
-              usedPercentage: Math.round(memData.active / memData.total * 100)
-            },
-            timestamp: Date.now()
+              usedPercentage: parseFloat((memData.active / memData.total * 100).toFixed(2))
+            }
           };
         } catch (error) {
           throw new Error(`Error getting system metrics: ${error}`);
@@ -99412,23 +99411,22 @@ var init_collector = __esm({
         const cpuCores = stats.cpu_stats.online_cpus || (stats.cpu_stats.cpu_usage.percpu_usage ? stats.cpu_stats.cpu_usage.percpu_usage.length : 1);
         const cpuUsage = cpuDelta / systemCpuDelta * cpuCores * 100;
         const memoryTotal = stats.memory_stats.limit;
-        const memoryUsed = stats.memory_stats.usage - (stats.memory_stats.stats?.cache || 0);
+        const memoryUsed = stats.memory_stats.usage;
         const memoryFree = memoryTotal - memoryUsed;
         const memoryUsedPercent = memoryUsed / memoryTotal * 100;
         return {
           name,
           type: "container",
           cpu: {
-            usedPercentage: Math.round(Number.isNaN(cpuUsage) ? 0 : cpuUsage),
+            usedPercentage: parseFloat(Number.isNaN(cpuUsage) ? "0.00" : cpuUsage.toFixed(2)),
             cores: cpuCores
           },
           memory: {
             total: memoryTotal,
             used: memoryUsed,
             free: memoryFree,
-            usedPercentage: Math.round(memoryUsedPercent)
-          },
-          timestamp: Date.now()
+            usedPercentage: parseFloat(memoryUsedPercent.toFixed(2))
+          }
         };
       }
     };
@@ -99513,7 +99511,8 @@ var init_client = __esm({
             workerName: this.workerName,
             procedureId: this.procedureId,
             count: this.count,
-            ...data
+            ...data,
+            time: (/* @__PURE__ */ new Date()).toISOString()
           });
         } catch (error) {
           logger.error(`\u274C Failed to send metrics to server: ${error}`);

@@ -1,0 +1,15 @@
+node_modules
+build
+temp
+.env
+.runtime
+
+test/outputs
+
+!tmp/.gitkeep
+translation.missing.json
+
+service-account.json
+
+.docker
+config.json

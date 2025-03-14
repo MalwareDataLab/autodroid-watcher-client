@@ -99357,7 +99357,7 @@ var init_collector = __esm({
           });
           const workerMetrics = await Promise.all(workerMetricsPromises);
           return workerMetrics.reduce((acc, metrics) => {
-            const processingId = metrics.name.split("_")[2];
+            const processingId = metrics.name.split("_")[3];
             acc[processingId] = {
               processingId,
               ...metrics

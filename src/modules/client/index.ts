@@ -61,6 +61,7 @@ class ClientService extends ClientCollectorService {
     this.websocketClient.socket.emit("systemInformation", {
       ...systemInfo,
       procedureId: this.procedureId,
+      workerName: this.workerName,
     });
 
     if (this.intervalId) clearInterval(this.intervalId);

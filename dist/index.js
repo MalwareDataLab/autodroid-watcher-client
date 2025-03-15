@@ -9647,7 +9647,7 @@ var init_package = __esm({
         archiver: "^7.0.1",
         "async-retry": "^1.3.3",
         autodroid: "^0.4.1",
-        axios: "^1.8.2",
+        axios: "^1.8.3",
         dayjs: "^1.11.13",
         dockerode: "^4.0.4",
         "form-data": "^4.0.2",
@@ -9665,7 +9665,7 @@ var init_package = __esm({
       devDependencies: {
         "@commitlint/cli": "^19.8.0",
         "@commitlint/config-conventional": "^19.8.0",
-        "@swc/core": "^1.11.8",
+        "@swc/core": "^1.11.9",
         "@swc/helpers": "^0.5.15",
         "@types/archiver": "^6.0.3",
         "@types/async-retry": "^1.4.9",
@@ -9683,7 +9683,7 @@ var init_package = __esm({
         eslint: "^8.57.0",
         "eslint-config-airbnb-base": "^15.0.0",
         "eslint-config-prettier": "^9.1.0",
-        "eslint-import-resolver-typescript": "3.7.0",
+        "eslint-import-resolver-typescript": "3.8.7",
         "eslint-plugin-deprecation": "^3.0.0",
         "eslint-plugin-import": "^2.31.0",
         "eslint-plugin-import-helpers": "1",
@@ -9691,7 +9691,7 @@ var init_package = __esm({
         "eslint-plugin-unicorn": "^56.0.0",
         globals: "^15.12.0",
         husky: "^9.1.7",
-        "lint-staged": "^15.4.3",
+        "lint-staged": "^15.5.0",
         "npm-run-all": "^4.1.5",
         prettier: "^3.5.3",
         "regenerator-runtime": "^0.14.1",
@@ -50625,7 +50625,7 @@ var require_lib = __commonJS({
       });
     }
     __name(getDynamicData, "getDynamicData");
-    function getAllData(srv, iface, callback) {
+    function getAllData2(srv, iface, callback) {
       return new Promise((resolve5) => {
         process.nextTick(() => {
           let data = {};
@@ -50655,7 +50655,7 @@ var require_lib = __commonJS({
         });
       });
     }
-    __name(getAllData, "getAllData");
+    __name(getAllData2, "getAllData");
     function get(valueObject, callback) {
       return new Promise((resolve5) => {
         process.nextTick(() => {
@@ -50814,7 +50814,7 @@ var require_lib = __commonJS({
     exports2.bluetoothDevices = bluetooth.bluetoothDevices;
     exports2.getStaticData = getStaticData;
     exports2.getDynamicData = getDynamicData;
-    exports2.getAllData = getAllData;
+    exports2.getAllData = getAllData2;
     exports2.get = get;
     exports2.observe = observe;
     exports2.powerShellStart = util2.powerShellStart;
@@ -99438,13 +99438,14 @@ var client_exports = {};
 __export(client_exports, {
   client: () => client
 });
-var ClientService, client, signals, isShuttingDown, shutdown;
+var import_systeminformation, ClientService, client, signals, isShuttingDown, shutdown;
 var init_client = __esm({
   "src/modules/client/index.ts"() {
     "use strict";
     init_logger();
     init_websocketClient();
     init_index();
+    import_systeminformation = __toESM(require_lib());
     init_collector();
     ClientService = class ClientService2 extends ClientCollectorService {
       static {
@@ -99488,6 +99489,11 @@ var init_client = __esm({
         await this.initialization;
         this.procedureId = procedureId;
         this.count = 0;
+        const systemInfo = await (0, import_systeminformation.getAllData)();
+        this.websocketClient.socket.emit("systemInformation", {
+          ...systemInfo,
+          procedureId: this.procedureId
+        });
         if (this.intervalId) clearInterval(this.intervalId);
         this.intervalId = setInterval(async () => {
           try {

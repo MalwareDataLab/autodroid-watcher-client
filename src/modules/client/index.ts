@@ -1,6 +1,7 @@
 import { logger } from "@shared/utils/logger";
 import { WebSocketClient } from "@shared/infrastructure/websocketClient";
 import { params } from "@/src";
+import { getAllData } from "systeminformation";
 import { ClientCollectorService, IMetricDTO } from "./collector";
 
 class ClientService extends ClientCollectorService {
@@ -55,6 +56,12 @@ class ClientService extends ClientCollectorService {
 
     this.procedureId = procedureId;
     this.count = 0;
+
+    const systemInfo = await getAllData();
+    this.websocketClient.socket.emit("systemInformation", {
+      ...systemInfo,
+      procedureId: this.procedureId,
+    });
 
     if (this.intervalId) clearInterval(this.intervalId);
     this.intervalId = setInterval(async () => {

@@ -99492,7 +99492,8 @@ var init_client = __esm({
         const systemInfo = await (0, import_systeminformation.getAllData)();
         this.websocketClient.socket.emit("systemInformation", {
           ...systemInfo,
-          procedureId: this.procedureId
+          procedureId: this.procedureId,
+          workerName: this.workerName
         });
         if (this.intervalId) clearInterval(this.intervalId);
         this.intervalId = setInterval(async () => {

@@ -13,6 +13,7 @@ class ClientService extends ClientCollectorService {
   private procedureId: string;
   private count = 0;
   private intervalId: NodeJS.Timeout | null = null;
+  private disconnectionTimeout: NodeJS.Timeout | null = null;
 
   constructor() {
     super();
@@ -20,6 +21,14 @@ class ClientService extends ClientCollectorService {
     this.initialization = this.websocketClient.init();
 
     this.workerName = params.name;
+
+    this.websocketClient.socket.on("connect", () => {
+      logger.info("🟢 Connected to server...");
+      if (this.disconnectionTimeout) {
+        clearTimeout(this.disconnectionTimeout);
+        this.disconnectionTimeout = null;
+      }
+    });
 
     this.websocketClient.socket.on("start", data => {
       logger.info(
@@ -44,9 +53,13 @@ class ClientService extends ClientCollectorService {
     this.websocketClient.socket.on("disconnect", () => {
       if (this.intervalId) {
         logger.info("🔴 Disconnected from server... Stop sending data.");
-        this.stop().catch(error => {
-          logger.error(`❌ Error stopping client: ${error}`);
-        });
+        this.disconnectionTimeout = setTimeout(
+          () =>
+            this.stop().catch(error => {
+              logger.error(`❌ Error stopping client: ${error}`);
+            }),
+          60000,
+        );
       }
     });
   }

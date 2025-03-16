@@ -99457,11 +99457,19 @@ var init_client = __esm({
       procedureId;
       count = 0;
       intervalId = null;
+      disconnectionTimeout = null;
       constructor() {
         super();
         this.websocketClient = new WebSocketClient();
         this.initialization = this.websocketClient.init();
         this.workerName = params.name;
+        this.websocketClient.socket.on("connect", () => {
+          logger.info("\u{1F7E2} Connected to server...");
+          if (this.disconnectionTimeout) {
+            clearTimeout(this.disconnectionTimeout);
+            this.disconnectionTimeout = null;
+          }
+        });
         this.websocketClient.socket.on("start", (data) => {
           logger.info(`\u{1F7E2} Received START command for procedureId: ${data.procedureId}`);
           this.start({
@@ -99479,9 +99487,9 @@ var init_client = __esm({
         this.websocketClient.socket.on("disconnect", () => {
           if (this.intervalId) {
             logger.info("\u{1F534} Disconnected from server... Stop sending data.");
-            this.stop().catch((error) => {
+            this.disconnectionTimeout = setTimeout(() => this.stop().catch((error) => {
               logger.error(`\u274C Error stopping client: ${error}`);
-            });
+            }), 6e4);
           }
         });
       }

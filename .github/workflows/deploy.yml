@@ -130,8 +130,8 @@ jobs:
 
       - name: Create archive
         run: |
-          tar -czf release-${{ needs.release.outputs.tag_name }}.tar.gz dist/
-          zip -r release-${{ needs.release.outputs.tag_name }}.zip dist/
+          tar -czf release-${{ needs.release.outputs.tag_name }}.tar.gz -C dist .
+          zip -r release-${{ needs.release.outputs.tag_name }}.zip dist/* -j
 
       - name: Upload Release Assets
         env:

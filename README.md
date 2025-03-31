@@ -64,7 +64,64 @@ npm install
 
 ## 📱 Utilização <a name="usage"></a>
 
-### Executando o Cliente
+### Parâmetros do Cliente
+
+O cliente requer os seguintes parâmetros para execução:
+
+```bash
+--token, -t TOKEN    # Token de autenticação do worker
+--url, -u URL        # URL do servidor
+--name, -n NAME      # Nome do worker
+```
+
+Exemplo de uso:
+```bash
+node dist/index.js --token abc123 --url http://server:3000 --name worker1
+# ou usando formas curtas
+node dist/index.js -t abc123 -u http://server:3000 -n worker1
+```
+
+### Instalação Automática
+
+Para instalar e executar o cliente automaticamente, você pode usar o script de instalação:
+
+```bash
+curl -s https://raw.githubusercontent.com/MalwareDataLab/autodroid-watcher-client/main/install.sh | bash -s -- --token abc123 --url http://server:3000 --name worker1
+```
+
+O script irá:
+1. Verificar os pré-requisitos (Node.js v22+, npm)
+2. Instalar o PM2 se necessário
+3. Clonar/atualizar o repositório
+4. Iniciar o serviço com os parâmetros fornecidos
+5. Configurar o serviço para iniciar automaticamente
+
+Opções adicionais do script:
+```bash
+-d, --dir DIR        # Diretório de instalação (padrão: ./autodroid-watcher-client)
+-h, --help           # Mostrar mensagem de ajuda
+```
+
+Exemplos:
+```bash
+# Instalação padrão
+curl -s https://raw.githubusercontent.com/MalwareDataLab/autodroid-watcher-client/main/install.sh | bash -s -- --token abc123 --url http://server:3000 --name worker1
+
+# Instalação em diretório específico
+curl -s https://raw.githubusercontent.com/MalwareDataLab/autodroid-watcher-client/main/install.sh | bash -s -- -t abc123 -u http://server:3000 -n worker1 -d /opt/autodroid
+```
+
+### Comandos Úteis
+
+Após a instalação, você pode usar os seguintes comandos para gerenciar o serviço:
+
+```bash
+pm2 logs autodroid-watcher  # Visualizar logs
+pm2 monit                   # Monitorar recursos
+pm2 stop autodroid-watcher  # Parar o serviço
+```
+
+### Executando o Cliente (Desenvolvimento)
 
 Para executar o cliente em modo de desenvolvimento, utilize o comando abaixo:
 

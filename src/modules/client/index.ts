@@ -96,17 +96,33 @@ class ClientService extends ClientCollectorService {
     }
   }
 
-  private async send(data: IMetricDTO): Promise<void> {
+  private async send({ workerMetrics, ...data }: IMetricDTO): Promise<void> {
     try {
-      this.websocketClient.socket.emit("report", {
-        workerName: this.workerName,
-        procedureId: this.procedureId,
-        count: this.count,
+      if (workerMetrics) {
+        workerMetrics?.forEach(worker => {
+          this.websocketClient.socket.emit("report", {
+            workerName: this.workerName,
+            procedureId: this.procedureId,
+            count: this.count,
 
-        ...data,
+            ...data,
+            workerMetrics: worker.metrics,
 
-        time: new Date().toISOString(),
-      });
+            time: new Date().toISOString(),
+          });
+        });
+      } else {
+        this.websocketClient.socket.emit("report", {
+          workerName: this.workerName,
+          procedureId: this.procedureId,
+          count: this.count,
+          workerMetrics: null,
+
+          ...data,
+
+          time: new Date().toISOString(),
+        });
+      }
     } catch (error) {
       logger.error(`❌ Failed to send metrics to server: ${error}`);
     }

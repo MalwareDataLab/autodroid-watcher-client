@@ -108886,6 +108886,7 @@ var init_collector = __esm({
         __name(this, "ClientCollectorService");
       }
       docker;
+      expectedWorkerContainerNameContains = "autodroid_worker";
       constructor() {
         this.docker = new import_dockerode.default({
           socketPath: "/var/run/docker.sock"
@@ -108917,7 +108918,7 @@ var init_collector = __esm({
       async collectProcessingMetrics() {
         try {
           const containers = await this.docker.listContainers();
-          const workerContainers = containers.filter((container) => container.Names.some((name) => name.substring(1).startsWith("autodroid_worker_")));
+          const workerContainers = containers.filter((container) => container.Names.some((name) => name.substring(1).startsWith(this.expectedWorkerContainerNameContains)));
           const workerMetricsPromises = workerContainers.map((containerInfo) => {
             const container = this.docker.getContainer(containerInfo.Id);
             const name = containerInfo.Names[0].substring(1);
@@ -108939,11 +108940,17 @@ var init_collector = __esm({
       async collectWorkerMetrics() {
         try {
           const containers = await this.docker.listContainers();
-          const mainWorker = containers.find((container2) => container2.Names.some((name) => name.substring(1) === "autodroid_worker"));
-          if (!mainWorker) throw new Error("No autodroid_worker container found");
-          const container = this.docker.getContainer(mainWorker.Id);
-          const metrics = await this.collectContainerMetrics(container, "autodroid_worker");
-          return metrics;
+          const workers = containers.filter((container) => container.Names.some((name) => name.substring(1).startsWith(this.expectedWorkerContainerNameContains)));
+          if (!workers.length) throw new Error(`No ${this.expectedWorkerContainerNameContains} containers found`);
+          const result2 = await Promise.all(workers.map(async (workerContainer, index) => {
+            const container = this.docker.getContainer(workerContainer.Id);
+            const metrics = await this.collectContainerMetrics(container, workerContainer.Names[0].substring(1));
+            return {
+              name: workerContainer.Names[0].substring(1) || `autodroid_worker_seq_${index}`,
+              metrics
+            };
+          }));
+          return result2;
         } catch (error) {
           throw new Error(`Error getting main worker metrics: ${error}`);
         }
@@ -109088,15 +109095,29 @@ var init_client = __esm({
           this.intervalId = null;
         }
       }
-      async send(data) {
+      async send({ workerMetrics, ...data }) {
         try {
-          this.websocketClient.socket.emit("report", {
-            workerName: this.workerName,
-            procedureId: this.procedureId,
-            count: this.count,
-            ...data,
-            time: (/* @__PURE__ */ new Date()).toISOString()
-          });
+          if (workerMetrics) {
+            workerMetrics?.forEach((worker) => {
+              this.websocketClient.socket.emit("report", {
+                workerName: this.workerName,
+                procedureId: this.procedureId,
+                count: this.count,
+                ...data,
+                workerMetrics: worker.metrics,
+                time: (/* @__PURE__ */ new Date()).toISOString()
+              });
+            });
+          } else {
+            this.websocketClient.socket.emit("report", {
+              workerName: this.workerName,
+              procedureId: this.procedureId,
+              count: this.count,
+              workerMetrics: null,
+              ...data,
+              time: (/* @__PURE__ */ new Date()).toISOString()
+            });
+          }
         } catch (error) {
           logger.error(`\u274C Failed to send metrics to server: ${error}`);
         }

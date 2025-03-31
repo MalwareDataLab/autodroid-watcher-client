@@ -5,7 +5,7 @@ import type { Metrics } from "@shared/types/metrics.type";
 
 type IMetricDTO = {
   hostMetrics: Metrics | null;
-  workerMetrics: Metrics | null;
+  workerMetrics: { name: string; metrics: Metrics }[] | null;
   processingMetrics: {
     [key: string]: { processingId: string } & Metrics;
   };
@@ -15,6 +15,7 @@ type IMetricDTO = {
 
 class ClientCollectorService {
   private readonly docker: Docker;
+  private readonly expectedWorkerContainerNameContains = "autodroid_worker";
 
   constructor() {
     this.docker = new Docker({ socketPath: "/var/run/docker.sock" });
@@ -55,7 +56,9 @@ class ClientCollectorService {
 
       const workerContainers = containers.filter(container =>
         container.Names.some(name =>
-          name.substring(1).startsWith("autodroid_worker_"),
+          name
+            .substring(1)
+            .startsWith(this.expectedWorkerContainerNameContains),
         ),
       );
 
@@ -83,23 +86,46 @@ class ClientCollectorService {
     }
   }
 
-  protected async collectWorkerMetrics(): Promise<Metrics | null> {
+  protected async collectWorkerMetrics(): Promise<
+    {
+      name: string;
+      metrics: Metrics;
+    }[]
+  > {
     try {
       const containers = await this.docker.listContainers();
 
-      const mainWorker = containers.find(container =>
-        container.Names.some(name => name.substring(1) === "autodroid_worker"),
+      const workers = containers.filter(container =>
+        container.Names.some(name =>
+          name
+            .substring(1)
+            .startsWith(this.expectedWorkerContainerNameContains),
+        ),
       );
 
-      if (!mainWorker) throw new Error("No autodroid_worker container found");
+      if (!workers.length)
+        throw new Error(
+          `No ${this.expectedWorkerContainerNameContains} containers found`,
+        );
 
-      const container = this.docker.getContainer(mainWorker.Id);
-      const metrics = await this.collectContainerMetrics(
-        container,
-        "autodroid_worker",
+      const result = await Promise.all(
+        workers.map(async (workerContainer, index) => {
+          const container = this.docker.getContainer(workerContainer.Id);
+          const metrics = await this.collectContainerMetrics(
+            container,
+            workerContainer.Names[0].substring(1),
+          );
+
+          return {
+            name:
+              workerContainer.Names[0].substring(1) ||
+              `autodroid_worker_seq_${index}`,
+            metrics,
+          };
+        }),
       );
 
-      return metrics;
+      return result;
     } catch (error) {
       throw new Error(`Error getting main worker metrics: ${error}`);
     }

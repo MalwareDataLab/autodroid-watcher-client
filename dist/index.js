@@ -9627,7 +9627,7 @@ var init_package = __esm({
     package_default = {
       name: "autodroid-watcher-client",
       author: "luizfelipelaviola",
-      version: "0.0.1",
+      version: "0.0.2",
       main: "./src/index.js",
       license: "MIT",
       engines: {

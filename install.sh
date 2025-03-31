@@ -90,6 +90,8 @@ else
 fi
 
 echo "Starting service..."
+pm2 stop autodroid-watcher 2>/dev/null || true
+pm2 delete autodroid-watcher 2>/dev/null || true
 pm2 start ./dist/index.js --name autodroid-watcher -- --token "$TOKEN" --url "$URL" --name "$NAME"
 pm2 save && pm2 startup
 

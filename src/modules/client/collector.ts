@@ -5,7 +5,7 @@ import type { Metrics } from "@shared/types/metrics.type";
 
 type IMetricDTO = {
   hostMetrics: Metrics | null;
-  workerMetrics: { name: string; metrics: Metrics }[] | null;
+  workerMetrics: Metrics[] | null;
   processingMetrics: {
     [key: string]: { processingId: string } & Metrics;
   };
@@ -86,12 +86,7 @@ class ClientCollectorService {
     }
   }
 
-  protected async collectWorkerMetrics(): Promise<
-    {
-      name: string;
-      metrics: Metrics;
-    }[]
-  > {
+  protected async collectWorkerMetrics(): Promise<Metrics[]> {
     try {
       const containers = await this.docker.listContainers();
 
@@ -109,19 +104,14 @@ class ClientCollectorService {
         );
 
       const result = await Promise.all(
-        workers.map(async (workerContainer, index) => {
+        workers.map(async workerContainer => {
           const container = this.docker.getContainer(workerContainer.Id);
           const metrics = await this.collectContainerMetrics(
             container,
             workerContainer.Names[0].substring(1),
           );
 
-          return {
-            name:
-              workerContainer.Names[0].substring(1) ||
-              `autodroid_worker_seq_${index}`,
-            metrics,
-          };
+          return metrics;
         }),
       );
 

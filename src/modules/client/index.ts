@@ -9,7 +9,7 @@ class ClientService extends ClientCollectorService {
 
   public readonly websocketClient: WebSocketClient;
 
-  private workerName: string;
+  private watcherName: string;
   private procedureId: string;
   private count = 0;
   private intervalId: NodeJS.Timeout | null = null;
@@ -20,7 +20,7 @@ class ClientService extends ClientCollectorService {
     this.websocketClient = new WebSocketClient();
     this.initialization = this.websocketClient.init();
 
-    this.workerName = params.name;
+    this.watcherName = params.name;
 
     this.websocketClient.socket.on("connect", () => {
       logger.info("🟢 Connected to server...");
@@ -74,7 +74,7 @@ class ClientService extends ClientCollectorService {
     this.websocketClient.socket.emit("systemInformation", {
       ...systemInfo,
       procedureId: this.procedureId,
-      workerName: this.workerName,
+      watcherName: this.watcherName,
     });
 
     if (this.intervalId) clearInterval(this.intervalId);
@@ -99,21 +99,21 @@ class ClientService extends ClientCollectorService {
   private async send({ workerMetrics, ...data }: IMetricDTO): Promise<void> {
     try {
       if (workerMetrics) {
-        workerMetrics?.forEach(worker => {
+        workerMetrics?.forEach(current => {
           this.websocketClient.socket.emit("report", {
-            workerName: this.workerName,
+            watcherName: this.watcherName,
             procedureId: this.procedureId,
             count: this.count,
 
             ...data,
-            workerMetrics: worker.metrics,
+            workerMetrics: current,
 
             time: new Date().toISOString(),
           });
         });
       } else {
         this.websocketClient.socket.emit("report", {
-          workerName: this.workerName,
+          watcherName: this.watcherName,
           procedureId: this.procedureId,
           count: this.count,
           workerMetrics: null,

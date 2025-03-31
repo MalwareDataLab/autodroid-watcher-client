@@ -108942,13 +108942,10 @@ var init_collector = __esm({
           const containers = await this.docker.listContainers();
           const workers = containers.filter((container) => container.Names.some((name) => name.substring(1).startsWith(this.expectedWorkerContainerNameContains)));
           if (!workers.length) throw new Error(`No ${this.expectedWorkerContainerNameContains} containers found`);
-          const result2 = await Promise.all(workers.map(async (workerContainer, index) => {
+          const result2 = await Promise.all(workers.map(async (workerContainer) => {
             const container = this.docker.getContainer(workerContainer.Id);
             const metrics = await this.collectContainerMetrics(container, workerContainer.Names[0].substring(1));
-            return {
-              name: workerContainer.Names[0].substring(1) || `autodroid_worker_seq_${index}`,
-              metrics
-            };
+            return metrics;
           }));
           return result2;
         } catch (error) {
@@ -109028,7 +109025,7 @@ var init_client = __esm({
       }
       initialization;
       websocketClient;
-      workerName;
+      watcherName;
       procedureId;
       count = 0;
       intervalId = null;
@@ -109037,7 +109034,7 @@ var init_client = __esm({
         super();
         this.websocketClient = new WebSocketClient();
         this.initialization = this.websocketClient.init();
-        this.workerName = params.name;
+        this.watcherName = params.name;
         this.websocketClient.socket.on("connect", () => {
           logger.info("\u{1F7E2} Connected to server...");
           if (this.disconnectionTimeout) {
@@ -109076,7 +109073,7 @@ var init_client = __esm({
         this.websocketClient.socket.emit("systemInformation", {
           ...systemInfo,
           procedureId: this.procedureId,
-          workerName: this.workerName
+          watcherName: this.watcherName
         });
         if (this.intervalId) clearInterval(this.intervalId);
         this.intervalId = setInterval(async () => {
@@ -109098,19 +109095,19 @@ var init_client = __esm({
       async send({ workerMetrics, ...data }) {
         try {
           if (workerMetrics) {
-            workerMetrics?.forEach((worker) => {
+            workerMetrics?.forEach((current) => {
               this.websocketClient.socket.emit("report", {
-                workerName: this.workerName,
+                watcherName: this.watcherName,
                 procedureId: this.procedureId,
                 count: this.count,
                 ...data,
-                workerMetrics: worker.metrics,
+                workerMetrics: current,
                 time: (/* @__PURE__ */ new Date()).toISOString()
               });
             });
           } else {
             this.websocketClient.socket.emit("report", {
-              workerName: this.workerName,
+              watcherName: this.watcherName,
               procedureId: this.procedureId,
               count: this.count,
               workerMetrics: null,

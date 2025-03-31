@@ -1,6 +1,6 @@
 #!/bin/bash
 
-INSTALL_DIR="./autodroid-watcher-client"
+INSTALL_DIR="$PWD/autodroid-watcher-client"
 TOKEN=""
 URL=""
 NAME=""
@@ -78,7 +78,7 @@ if ! command_exists pm2; then
     npm install -g pm2
 fi
 
-mkdir -p "$INSTALL_DIR"
+mkdir "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
 TEMP_DIR=$(mktemp -d)

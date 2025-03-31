@@ -7,7 +7,7 @@ type IMetricDTO = {
   hostMetrics: Metrics | null;
   workerMetrics: Metrics[] | null;
   processingMetrics: {
-    [key: string]: { processingId: string } & Metrics;
+    [key: string]: { processingId: string; workerName: string } & Metrics;
   };
 
   error: string | null;
@@ -49,12 +49,12 @@ class ClientCollectorService {
   }
 
   protected async collectProcessingMetrics(): Promise<{
-    [key: string]: { processingId: string } & Metrics;
+    [key: string]: { processingId: string; workerName: string } & Metrics;
   }> {
     try {
       const containers = await this.docker.listContainers();
 
-      const workerContainers = containers.filter(container =>
+      const processingContainers = containers.filter(container =>
         container.Names.some(name =>
           name
             .substring(1)
@@ -62,7 +62,7 @@ class ClientCollectorService {
         ),
       );
 
-      const workerMetricsPromises = workerContainers.map(containerInfo => {
+      const workerMetricsPromises = processingContainers.map(containerInfo => {
         const container = this.docker.getContainer(containerInfo.Id);
         const name = containerInfo.Names[0].substring(1);
         return this.collectContainerMetrics(container, name);
@@ -72,14 +72,18 @@ class ClientCollectorService {
 
       return workerMetrics.reduce(
         (acc, metrics) => {
+          const workerName = metrics.name.split("_")[2];
           const processingId = metrics.name.split("_")[3];
           acc[processingId] = {
             processingId,
+            workerName,
             ...metrics,
           };
           return acc;
         },
-        {} as { [key: string]: { processingId: string } & Metrics },
+        {} as {
+          [key: string]: { processingId: string; workerName: string } & Metrics;
+        },
       );
     } catch (error) {
       throw new Error(`Error getting main worker metrics: ${error}`);

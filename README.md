@@ -105,10 +105,10 @@ Opções adicionais do script:
 Exemplos:
 ```bash
 # Instalação padrão
-curl -s https://raw.githubusercontent.com/MalwareDataLab/autodroid-watcher-client/main/install.sh | bash -s -- --token abc123 --url http://server:3000 --name worker1
+curl -s https://raw.githubusercontent.com/MalwareDataLab/autodroid-watcher-client/main/install.sh -H "Cache-Control: no-cache" | bash -s -- --token abc123 --url http://server:3000 --name worker1
 
 # Instalação em diretório específico
-curl -s https://raw.githubusercontent.com/MalwareDataLab/autodroid-watcher-client/main/install.sh | bash -s -- -t abc123 -u http://server:3000 -n worker1 -d /opt/autodroid
+curl -s https://raw.githubusercontent.com/MalwareDataLab/autodroid-watcher-client/main/install.sh -H "Cache-Control: no-cache" | bash -s -- -t abc123 -u http://server:3000 -n worker1 -d /opt/autodroid
 ```
 
 ### Comandos Úteis
@@ -176,4 +176,4 @@ npm run lint
 - [Standard Version](https://github.com/conventional-changelog/standard-version) - Gerador de changelog
 - [Eslint](https://eslint.org/) - Framework de verificação de código
 - [Prettier](https://prettier.io/) - Formatador de código
-- [Semver](https://semver.org/) - Versionamento semântico 
+- [Semver](https://semver.org/) - Versionamento semântico

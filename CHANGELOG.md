@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.0.2](https://github.com/MalwareDataLab/autodroid-watcher-client/compare/v0.0.1...v0.0.2) (2025-03-31)
+
+
+### Bug Fixes
+
+* support multiple workers on the same host ([c7361a2](https://github.com/MalwareDataLab/autodroid-watcher-client/commit/c7361a2fb020b9d11318dc0a0ccaff252c93365e))
+
 ## 0.0.1 (2025-03-31)
 
 

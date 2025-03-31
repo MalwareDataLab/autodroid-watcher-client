@@ -64,15 +64,17 @@ class ClientCollectorService {
         ),
       );
 
-      const workerMetricsPromises = processingContainers.map(containerInfo => {
-        const container = this.docker.getContainer(containerInfo.Id);
-        const name = containerInfo.Names[0].substring(1);
-        return this.collectContainerMetrics(container, name);
-      });
+      const processingMetricsPromises = processingContainers.map(
+        containerInfo => {
+          const container = this.docker.getContainer(containerInfo.Id);
+          const name = containerInfo.Names[0].substring(1);
+          return this.collectContainerMetrics(container, name);
+        },
+      );
 
-      const workerMetrics = await Promise.all(workerMetricsPromises);
+      const processingMetrics = await Promise.all(processingMetricsPromises);
 
-      return workerMetrics.reduce(
+      return processingMetrics.reduce(
         (acc, metrics) => {
           const workerName = metrics.name.split("_")[2];
           const processingId = metrics.name.split("_")[3];

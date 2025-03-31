@@ -9627,7 +9627,7 @@ var init_package = __esm({
     package_default = {
       name: "autodroid-watcher-client",
       author: "luizfelipelaviola",
-      version: "0.1.2",
+      version: "0.1.3",
       main: "./src/index.js",
       license: "MIT",
       engines: {
@@ -108920,13 +108920,13 @@ var init_collector = __esm({
         try {
           const containers = await this.docker.listContainers();
           const processingContainers = containers.filter((container) => container.Names.some((name) => name.substring(1).startsWith(this.expectedProcessingContainerNameContains)));
-          const workerMetricsPromises = processingContainers.map((containerInfo) => {
+          const processingMetricsPromises = processingContainers.map((containerInfo) => {
             const container = this.docker.getContainer(containerInfo.Id);
             const name = containerInfo.Names[0].substring(1);
             return this.collectContainerMetrics(container, name);
           });
-          const workerMetrics = await Promise.all(workerMetricsPromises);
-          return workerMetrics.reduce((acc, metrics) => {
+          const processingMetrics = await Promise.all(processingMetricsPromises);
+          return processingMetrics.reduce((acc, metrics) => {
             const workerName = metrics.name.split("_")[2];
             const processingId = metrics.name.split("_")[3];
             acc[processingId] = {

@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.3](https://github.com/MalwareDataLab/autodroid-watcher-client/compare/v0.1.2...v0.1.3) (2025-03-31)
+
+
+### Bug Fixes
+
+* container selector ([6d4414b](https://github.com/MalwareDataLab/autodroid-watcher-client/commit/6d4414bc85d95df167a56e8919dba9d667348413))
+
 ## [0.1.2](https://github.com/MalwareDataLab/autodroid-watcher-client/compare/v0.1.1...v0.1.2) (2025-03-31)
 
 

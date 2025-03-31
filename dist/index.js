@@ -9627,7 +9627,7 @@ var init_package = __esm({
     package_default = {
       name: "autodroid-watcher-client",
       author: "luizfelipelaviola",
-      version: "0.1.0",
+      version: "0.1.1",
       main: "./src/index.js",
       license: "MIT",
       engines: {
@@ -108887,6 +108887,7 @@ var init_collector = __esm({
       }
       docker;
       expectedWorkerContainerNameContains = "autodroid_worker";
+      expectedProcessingContainerNameContains = "autodroid_worker_";
       constructor() {
         this.docker = new import_dockerode.default({
           socketPath: "/var/run/docker.sock"
@@ -108918,7 +108919,7 @@ var init_collector = __esm({
       async collectProcessingMetrics() {
         try {
           const containers = await this.docker.listContainers();
-          const processingContainers = containers.filter((container) => container.Names.some((name) => name.substring(1).startsWith(this.expectedWorkerContainerNameContains)));
+          const processingContainers = containers.filter((container) => container.Names.some((name) => name.substring(1).startsWith(this.expectedProcessingContainerNameContains)));
           const workerMetricsPromises = processingContainers.map((containerInfo) => {
             const container = this.docker.getContainer(containerInfo.Id);
             const name = containerInfo.Names[0].substring(1);
@@ -108942,7 +108943,7 @@ var init_collector = __esm({
       async collectWorkerMetrics() {
         try {
           const containers = await this.docker.listContainers();
-          const workers = containers.filter((container) => container.Names.some((name) => name.substring(1).startsWith(this.expectedWorkerContainerNameContains)));
+          const workers = containers.filter((container) => container.Image.includes("autodroid-worker") && container.Names.some((name) => name.substring(1).startsWith(this.expectedWorkerContainerNameContains)));
           if (!workers.length) throw new Error(`No ${this.expectedWorkerContainerNameContains} containers found`);
           const result2 = await Promise.all(workers.map(async (workerContainer) => {
             const container = this.docker.getContainer(workerContainer.Id);
@@ -109063,7 +109064,7 @@ var init_client = __esm({
             logger.info("\u{1F534} Disconnected from server... Stop sending data.");
             this.disconnectionTimeout = setTimeout(() => this.stop().catch((error) => {
               logger.error(`\u274C Error stopping client: ${error}`);
-            }), 6e4);
+            }), 2e4);
           }
         });
       }
@@ -109094,16 +109095,22 @@ var init_client = __esm({
           this.intervalId = null;
         }
       }
-      async send({ workerMetrics, ...data }) {
+      async send({ workerMetrics, processingMetrics, ...data }) {
         try {
           if (workerMetrics) {
-            workerMetrics?.forEach((current) => {
+            workerMetrics?.forEach((worker) => {
               this.websocketClient.socket.emit("report", {
                 watcherName: this.watcherName,
                 procedureId: this.procedureId,
                 count: this.count,
                 ...data,
-                workerMetrics: current,
+                workerMetrics: worker,
+                processingMetrics: Object.values(processingMetrics).reduce((acc, processingMetric) => {
+                  if (processingMetric.name.startsWith(`${worker.name}_${processingMetric.workerName}_`)) {
+                    acc[processingMetric.processingId] = processingMetric;
+                  }
+                  return acc;
+                }, {}),
                 time: (/* @__PURE__ */ new Date()).toISOString()
               });
             });
@@ -109113,6 +109120,7 @@ var init_client = __esm({
               procedureId: this.procedureId,
               count: this.count,
               workerMetrics: null,
+              processingMetrics,
               ...data,
               time: (/* @__PURE__ */ new Date()).toISOString()
             });

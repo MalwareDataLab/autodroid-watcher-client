@@ -2,6 +2,7 @@ import { logger } from "@shared/utils/logger";
 import { WebSocketClient } from "@shared/infrastructure/websocketClient";
 import { params } from "@/src";
 import { getAllData } from "systeminformation";
+import { Metrics } from "@shared/types/metrics.type";
 import { ClientCollectorService, IMetricDTO } from "./collector";
 
 class ClientService extends ClientCollectorService {
@@ -58,7 +59,7 @@ class ClientService extends ClientCollectorService {
             this.stop().catch(error => {
               logger.error(`❌ Error stopping client: ${error}`);
             }),
-          60000,
+          20000,
         );
       }
     });
@@ -96,17 +97,37 @@ class ClientService extends ClientCollectorService {
     }
   }
 
-  private async send({ workerMetrics, ...data }: IMetricDTO): Promise<void> {
+  private async send({
+    workerMetrics,
+    processingMetrics,
+    ...data
+  }: IMetricDTO): Promise<void> {
     try {
       if (workerMetrics) {
-        workerMetrics?.forEach(current => {
+        workerMetrics?.forEach(worker => {
           this.websocketClient.socket.emit("report", {
             watcherName: this.watcherName,
             procedureId: this.procedureId,
             count: this.count,
 
             ...data,
-            workerMetrics: current,
+            workerMetrics: worker,
+            processingMetrics: Object.values(processingMetrics).reduce(
+              (acc, processingMetric) => {
+                if (
+                  processingMetric.name.startsWith(
+                    `${worker.name}_${processingMetric.workerName}_`,
+                  )
+                ) {
+                  acc[processingMetric.processingId] = processingMetric;
+                }
+                return acc;
+              },
+              {} as Record<
+                string,
+                { processingId: string; workerName: string } & Metrics
+              >,
+            ),
 
             time: new Date().toISOString(),
           });
@@ -117,7 +138,7 @@ class ClientService extends ClientCollectorService {
           procedureId: this.procedureId,
           count: this.count,
           workerMetrics: null,
-
+          processingMetrics,
           ...data,
 
           time: new Date().toISOString(),

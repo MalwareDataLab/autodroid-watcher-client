@@ -16,6 +16,8 @@ type IMetricDTO = {
 class ClientCollectorService {
   private readonly docker: Docker;
   private readonly expectedWorkerContainerNameContains = "autodroid_worker";
+  private readonly expectedProcessingContainerNameContains =
+    "autodroid_worker_";
 
   constructor() {
     this.docker = new Docker({ socketPath: "/var/run/docker.sock" });
@@ -58,7 +60,7 @@ class ClientCollectorService {
         container.Names.some(name =>
           name
             .substring(1)
-            .startsWith(this.expectedWorkerContainerNameContains),
+            .startsWith(this.expectedProcessingContainerNameContains),
         ),
       );
 
@@ -94,12 +96,14 @@ class ClientCollectorService {
     try {
       const containers = await this.docker.listContainers();
 
-      const workers = containers.filter(container =>
-        container.Names.some(name =>
-          name
-            .substring(1)
-            .startsWith(this.expectedWorkerContainerNameContains),
-        ),
+      const workers = containers.filter(
+        container =>
+          container.Image.includes("autodroid-worker") &&
+          container.Names.some(name =>
+            name
+              .substring(1)
+              .startsWith(this.expectedWorkerContainerNameContains),
+          ),
       );
 
       if (!workers.length)

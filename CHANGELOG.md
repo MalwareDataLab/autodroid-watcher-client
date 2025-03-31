@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.1.1](https://github.com/MalwareDataLab/autodroid-watcher-client/compare/v0.1.0...v0.1.1) (2025-03-31)
+
+
+### Bug Fixes
+
+* send worker name along with the statistics ([9209baf](https://github.com/MalwareDataLab/autodroid-watcher-client/commit/9209baffed9ce81c6b7acbf4415facbe759d0ed4))
+
 ## [0.1.0](https://github.com/MalwareDataLab/autodroid-watcher-client/compare/v0.0.2...v0.1.0) (2025-03-31)
 
 

@@ -9627,7 +9627,7 @@ var init_package = __esm({
     package_default = {
       name: "autodroid-watcher-client",
       author: "luizfelipelaviola",
-      version: "0.1.1",
+      version: "0.1.2",
       main: "./src/index.js",
       license: "MIT",
       engines: {
@@ -109106,7 +109106,7 @@ var init_client = __esm({
                 ...data,
                 workerMetrics: worker,
                 processingMetrics: Object.values(processingMetrics).reduce((acc, processingMetric) => {
-                  if (processingMetric.name.startsWith(`${worker.name}_${processingMetric.workerName}_`)) {
+                  if (processingMetric.name.startsWith(`${this.expectedWorkerContainerNameContains}_${processingMetric.workerName}_`)) {
                     acc[processingMetric.processingId] = processingMetric;
                   }
                   return acc;

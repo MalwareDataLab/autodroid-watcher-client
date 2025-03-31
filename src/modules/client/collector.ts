@@ -15,8 +15,8 @@ type IMetricDTO = {
 
 class ClientCollectorService {
   private readonly docker: Docker;
-  private readonly expectedWorkerContainerNameContains = "autodroid_worker";
-  private readonly expectedProcessingContainerNameContains =
+  protected readonly expectedWorkerContainerNameContains = "autodroid_worker";
+  protected readonly expectedProcessingContainerNameContains =
     "autodroid_worker_";
 
   constructor() {

@@ -116,7 +116,7 @@ class ClientService extends ClientCollectorService {
               (acc, processingMetric) => {
                 if (
                   processingMetric.name.startsWith(
-                    `${worker.name}_${processingMetric.workerName}_`,
+                    `${this.expectedWorkerContainerNameContains}_${processingMetric.workerName}_`,
                   )
                 ) {
                   acc[processingMetric.processingId] = processingMetric;

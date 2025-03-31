@@ -78,7 +78,7 @@ if ! command_exists pm2; then
     npm install -g pm2
 fi
 
-mkdir "$INSTALL_DIR"
+mkdir -p "$INSTALL_DIR"
 cd "$INSTALL_DIR"
 
 TEMP_DIR=$(mktemp -d)

@@ -4,6 +4,7 @@ INSTALL_DIR="$PWD/autodroid-watcher-client"
 TOKEN=""
 URL=""
 NAME=""
+SERVICE_NAME="autodroid-watcher"
 
 show_help() {
     echo "Usage: $0 [OPTIONS] --token TOKEN --url URL --name NAME"
@@ -15,6 +16,7 @@ show_help() {
     echo
     echo "Options:"
     echo "  -d, --dir DIR        Installation directory (default: ./autodroid-watcher-client)"
+    echo "  -s, --service NAME   PM2 service name (default: autodroid-watcher)"
     echo "  -h, --help           Show this help message"
     echo
     echo "Example:"
@@ -32,6 +34,7 @@ while [[ $# -gt 0 ]]; do
         -t|--token) TOKEN="$2"; shift 2 ;;
         -u|--url) URL="$2"; shift 2 ;;
         -n|--name) NAME="$2"; shift 2 ;;
+        -s|--service) SERVICE_NAME="$2"; shift 2 ;;
         *) echo "Unknown option: $1"; show_help; exit 1 ;;
     esac
 done
@@ -97,14 +100,14 @@ cd "$INSTALL_DIR"
 rm -rf "$TEMP_DIR"
 
 echo "Starting service..."
-pm2 stop autodroid-watcher 2>/dev/null || true
-pm2 delete autodroid-watcher 2>/dev/null || true
-pm2 start ./index.js --name autodroid-watcher -- --token "$TOKEN" --url "$URL" --name "$NAME"
+pm2 stop "$SERVICE_NAME" 2>/dev/null || true
+pm2 delete "$SERVICE_NAME" 2>/dev/null || true
+pm2 start ./index.js --name "$SERVICE_NAME" -- --token "$TOKEN" --url "$URL" --name "$NAME"
 pm2 save && pm2 startup
 
 echo "Installation completed!"
 echo "Useful commands:"
-echo "• pm2 logs autodroid-watcher  # View logs"
+echo "• pm2 logs $SERVICE_NAME  # View logs"
 echo "• pm2 monit                   # Monitor resources"
-echo "• pm2 stop autodroid-watcher  # Stop service"
-echo "• pm2 delete autodroid-watcher # Delete service"
+echo "• pm2 stop $SERVICE_NAME  # Stop service"
+echo "• pm2 delete $SERVICE_NAME # Delete service"

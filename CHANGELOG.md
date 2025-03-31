@@ -1,5 +1,17 @@
 # Changelog
 
+## [0.1.0](https://github.com/MalwareDataLab/autodroid-watcher-client/compare/v0.0.2...v0.1.0) (2025-03-31)
+
+
+### Features
+
+* change multi worker approach ([e07d9dc](https://github.com/MalwareDataLab/autodroid-watcher-client/commit/e07d9dcd1c5a1bfb0fda898bc9c30c09ced26061))
+
+
+### Bug Fixes
+
+* update build ([c526b34](https://github.com/MalwareDataLab/autodroid-watcher-client/commit/c526b3416656c1f6bbf3a508fe58706e2c8363e5))
+
 ## [0.0.2](https://github.com/MalwareDataLab/autodroid-watcher-client/compare/v0.0.1...v0.0.2) (2025-03-31)
 
 

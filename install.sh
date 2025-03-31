@@ -25,7 +25,6 @@ show_help() {
 command_exists() { command -v "$1" >/dev/null 2>&1; }
 version_gt() { test "$(printf '%s\n' "$@" | sort -V | head -n 1)" != "$1"; }
 
-# Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
         -d|--dir) INSTALL_DIR="$2"; shift 2 ;;
@@ -80,19 +79,27 @@ if ! command_exists pm2; then
 fi
 
 mkdir -p "$INSTALL_DIR"
-if [ -d "$INSTALL_DIR/.git" ]; then
-    echo "Updating existing repository..."
-    cd "$INSTALL_DIR" && git pull
-else
-    echo "Cloning repository..."
-    git clone https://github.com/MalwareDataLab/autodroid-watcher-client.git "$INSTALL_DIR"
-    cd "$INSTALL_DIR"
-fi
+cd "$INSTALL_DIR"
+
+TEMP_DIR=$(mktemp -d)
+cd "$TEMP_DIR"
+
+echo "Downloading latest dist folder..."
+curl -s -H "Cache-Control: no-cache" -L "https://github.com/MalwareDataLab/autodroid-watcher-client/archive/main.zip" -o repo.zip
+unzip -q repo.zip
+rm repo.zip
+
+echo "Updating files..."
+rm -rf "$INSTALL_DIR"/*
+cp -r autodroid-watcher-client-main/dist/* "$INSTALL_DIR/"
+
+cd "$INSTALL_DIR"
+rm -rf "$TEMP_DIR"
 
 echo "Starting service..."
 pm2 stop autodroid-watcher 2>/dev/null || true
 pm2 delete autodroid-watcher 2>/dev/null || true
-pm2 start ./dist/index.js --name autodroid-watcher -- --token "$TOKEN" --url "$URL" --name "$NAME"
+pm2 start ./index.js --name autodroid-watcher -- --token "$TOKEN" --url "$URL" --name "$NAME"
 pm2 save && pm2 startup
 
 echo "Installation completed!"
